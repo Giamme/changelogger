@@ -1,0 +1,4 @@
+interface:
+  display_name: "Changelogger"
+  short_description: "Changelog fragments per change, compiled and versioned at release"
+  default_prompt: "Use $changelogger to log this change in the changelog, or to cut a release."

@@ -1,0 +1,34 @@
+# Releases automatically when changes land on the release branch: bumps every version file,
+# compiles CHANGELOG.md and the What's new JSON, commits "chore(release): v<version>" and tags it.
+# Installed by the changelogger skill; needs .changelog/changelogger.py (`changelogger vendor`).
+name: release
+
+on:
+  push:
+    branches: [main]          # the branch whose merges should release
+
+permissions:
+  contents: write             # push the release commit and tag
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # The release commit itself lands on the branch too; never release it again.
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}  # the branch head: a queued run must start after the previous release commit
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+      - name: Release if anything is unreleased
+        run: python3 .changelog/changelogger.py release auto --tag
+      - name: Push the release commit and tag
+        run: git push --follow-tags

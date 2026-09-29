@@ -1,0 +1,16 @@
+{
+  "name": "changelogger",
+  "owner": {
+    "name": "Giamme"
+  },
+  "metadata": {
+    "description": "Changelogs written as you commit, compiled at release."
+  },
+  "plugins": [
+    {
+      "name": "changelogger",
+      "source": ".",
+      "description": "Changelog fragments written as the work happens, derived drafts for commits without one, version bumps across every version file, and release compilation into CHANGELOG.md plus What's new JSON."
+    }
+  ]
+}

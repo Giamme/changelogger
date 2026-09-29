@@ -1,0 +1,118 @@
+{
+  "skill_name": "changelogger",
+  "evals": [
+    {
+      "id": 1,
+      "name": "setup-ask-first",
+      "harness": "ask-and-stop",
+      "prompt": "I want proper changelogs and version management in this repo (tasklet, a little Python CLI). Every change should get logged somewhere as we go, and when I release, it should all become a real changelog entry with the version bumped. Set it up \u2014 you have my go-ahead to create whatever files are needed \u2014 and backfill what's changed since the last release (v0.3.0). Don't install any git hooks and don't tag anything.",
+      "expected_output": "The agent inspects the repo (init --dry-run) and then asks, in one message, how versions should look (with examples from 0.3.0), which kinds of releases they make, and how releases happen (by hand or automatically on merge/PR); it creates nothing until answered.",
+      "files": [
+        "evals/fixtures/make_fixture.sh setup"
+      ],
+      "assertions": [
+        "Asks how versions should look and which kinds of releases they make, with concrete examples built from the current version 0.3.0",
+        "Asks how releases happen (by hand, or automatically on each merge or PR)",
+        "Waits for the answers: no changelog system is created yet (no new files at all)",
+        "No commits, git hooks or tags"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "log-after-commit",
+      "prompt": "I just committed the CSV export feature for reports. Log it in the changelog please.",
+      "expected_output": "One user-facing fragment in .changelog/unreleased/ (type added) naming the CSV export commit; no CHANGELOG.md edit, no bump; status clean afterwards.",
+      "files": [
+        "evals/fixtures/make_fixture.sh after-commit"
+      ],
+      "assertions": [
+        "A new changelog entry mentions CSV export",
+        "The entry is a fragment in .changelog/unreleased/ (the repo's convention), and CHANGELOG.md was not created or edited",
+        "The fragment is typed as an addition (type: added)",
+        "The fragment references the CSV export commit",
+        "The entry is written for users: no internal function names (export_csv) or file paths",
+        "No version bump and no new tag",
+        "Afterwards no commit since the last release is uncovered (changelogger status shows no drafts)"
+      ],
+      "harness": "continue"
+    },
+    {
+      "id": 3,
+      "name": "cut-release",
+      "prompt": "Let's cut a release. Pick the right version number, compile the changelog, and make the release commit \u2014 I'm fine with whatever version the changes call for. Don't tag or push anything.",
+      "expected_output": "2.0.0 (breaking change) in both version files; new top section in CHANGELOG.md in the existing '## X \u2014 date' style with all 6 user-relevant changes incl. the 2 commits that had no fragment; older sections intact; whats-new.json without the internal uv entry; fragments archived; release commit; no tag.",
+      "files": [
+        "evals/fixtures/make_fixture.sh release"
+      ],
+      "assertions": [
+        "Version is 2.0.0 in both pyproject.toml and src/reportly/__init__.py",
+        "CHANGELOG.md has a 2.0.0 section above 1.4.2, in the file's existing heading style (## 2.0.0 \u2014 YYYY-MM-DD)",
+        "The hand-written 1.4.2 and 1.4.1 sections are preserved verbatim",
+        "The two commits that had no fragment (PDF fonts fix, --quiet flag) appear in the 2.0.0 notes",
+        "Dropping Python 3.8 is called out as breaking",
+        "web/whats-new.json lists 2.0.0 first and leaves out the internal uv build entry",
+        "Fragments are archived: none left in .changelog/unreleased/, changelog.json lists 2.0.0 first",
+        "A release commit exists and the working tree is clean",
+        "No new tag was created",
+        "Reply asks (or records as questions) which changes the release should lead with and how detailed the notes should be"
+      ],
+      "harness": "continue"
+    },
+    {
+      "id": 4,
+      "name": "hotfix-scheme",
+      "prompt": "We version this app as v1.4, v1.5 and so on \u2014 just major.minor \u2014 and when an urgent fix has to go out on top of a release we ship it as a hotfix, like v1.4.hotfix-1. Set up changelogs and versioning that way, then ship the fix I just committed as a hotfix release. The release commit is enough \u2014 don't tag or push.",
+      "expected_output": "Versioning set to {major}.{minor}[.hotfix-{hotfix}]; package.json stores a valid, non-pre-release SemVer for the hotfix (1.4.0+hotfix.1 or 1.4.1); CHANGELOG.md gets a 1.4.hotfix-1 section describing the session-expiry fix for users; the scheme is recorded for future releases; release commit; no tag.",
+      "files": [
+        "evals/fixtures/make_fixture.sh hotfix"
+      ],
+      "assertions": [
+        "The release is named 1.4.hotfix-1 in a CHANGELOG.md heading",
+        "package.json holds a valid SemVer that is not a pre-release and is newer than 1.4.0 in intent (e.g. 1.4.0+hotfix.1 or 1.4.1; not 1.4.0-hotfix.1, which sorts before 1.4.0)",
+        "The hotfix entry describes the session-expiry fix from the user's point of view (no file paths or function names)",
+        "The versioning scheme (major.minor plus hotfixes) is recorded in the repo for future releases",
+        "A release commit exists and the working tree is clean",
+        "No new tag was created (only v1.4)"
+      ],
+      "harness": "continue"
+    },
+    {
+      "id": 5,
+      "name": "setup-answered",
+      "harness": "continue",
+      "prompt": "Set up changelogs and version management in this repo (tasklet, a little Python CLI) so every change gets logged as we go and releases turn it into a real changelog with the version bumped. We use plain SemVer with the v only in tags, and releases are manual \u2014 I tell you when to cut one. Backfill what's changed since v0.3.0. Don't install git hooks and don't tag anything.",
+      "expected_output": "SemVer set up without re-asking; pyproject.toml + src/tasklet/__init__.py as version files; polished fragments for the 4 user-visible commits; nothing bumped; no hooks/tags; What's new proposal.",
+      "files": [
+        "evals/fixtures/make_fixture.sh setup"
+      ],
+      "assertions": [
+        "All four user-visible changes since v0.3.0 are logged (--due filter, empty tasks.json fix, gist sync, missing task file message)",
+        "Internal commits are not logged as entries (no mention of the ruff bump or the due-date test)",
+        "No logged entry is left as a raw draft (no 'draft: true', no conventional-commit prefixes like 'feat(' or 'fix:')",
+        "Version management knows both version locations (a new config/script/doc references pyproject.toml and src/tasklet/__init__.py)",
+        "Nothing was bumped: both version files still say 0.3.0 and ruff's target-version is untouched",
+        "No git hooks installed and no new tags",
+        "Reply proposes a place where end users can see changes (What's new / release notes)"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "ci-automation",
+      "harness": "continue",
+      "prompt": "This repo already keeps its changelog with changelogger. We want releases to be automatic from now on: every merge to main should bump the version, update the changelog and tag the release, and pull requests should fail if they don't include a changelog entry. Set that up with GitHub Actions. Commit the setup, but don't push anything.",
+      "expected_output": "Vendored script + two workflows (PR check via `check --range`, release on push to main via `release auto --tag` with loop guard and contents: write); setup committed; no push/tag; reply warns about protected branches / GITHUB_TOKEN not triggering other workflows.",
+      "files": [
+        "evals/fixtures/make_fixture.sh ci"
+      ],
+      "assertions": [
+        "A pull_request workflow checks that every change has a changelog entry",
+        "A workflow on pushes to main bumps the version, updates the changelog and tags the release",
+        "The release workflow cannot loop on its own release commits",
+        "The release workflow has permission to push (contents: write)",
+        "Every script the workflows run exists in the repo",
+        "The setup is committed and nothing was tagged",
+        "Reply warns what the default GITHUB_TOKEN cannot do (push to protected branches, trigger other workflows from its tags)"
+      ]
+    }
+  ]
+}

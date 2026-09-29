@@ -1,0 +1,8 @@
+{
+  "name": "changelogger",
+  "description": "Changelog fragments written as the work happens, derived drafts for commits without one, version bumps across every version file, and release compilation into CHANGELOG.md plus What's new JSON.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Giamme"
+  }
+}
