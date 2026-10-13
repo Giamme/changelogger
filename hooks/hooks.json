@@ -1,5 +1,5 @@
 {
-  "description": "changelogger: after a git commit made through the Bash tool, report commits that have no changelog fragment (only in repos with .changelog/config.json)",
+  "description": "changelogger: after a git commit or revert made through the Bash tool, report commits that have no changelog fragment (only in repos with .changelog/config.json)",
   "hooks": {
     "PostToolUse": [
       {
@@ -7,19 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git commit:*)",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/changelogger/scripts/claude_hook.py\"",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "if": "Bash(git -C * commit *)",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/changelogger/scripts/claude_hook.py\"",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "if": "Bash(git revert:*)",
+            "if": "Bash(git *)",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/changelogger/scripts/claude_hook.py\"",
             "timeout": 15
           }

@@ -19,8 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-Portions of both skills are adapted from the test-audit skill in OpenClaw
-(https://github.com/openclaw/openclaw), Copyright (c) 2026 OpenClaw Foundation,
-also under the MIT License. Its full notice ships inside each skill folder as
-LICENSE-openclaw.

@@ -1808,9 +1808,10 @@ def cmd_hooks(args) -> int:
     installed = HOOK_START in text
     shim = shutil.which("changelogger") or (str(Path.home() / ".local/bin/changelogger")
                                             if (Path.home() / ".local/bin/changelogger").exists() else None)
+    link = f'ln -s "{SCRIPT}" ~/.local/bin/changelogger'
     if args.action == "status":
         _print(f"post-commit hook: {'on' if installed else 'off'} ({target})",
-               f"changelogger command: {shim or 'missing (run the repo scripts/install to create the shim)'}")
+               f"changelogger command: {shim or f'missing (create it with `{link}`)'}")
         return 0
     if args.action == "on":
         if not repo.initialized:
@@ -1827,8 +1828,8 @@ def cmd_hooks(args) -> int:
         target.chmod(target.stat().st_mode | 0o111)
         print(f"on: {target}")
         if not shim:
-            print("Note: the `changelogger` command is not installed yet; the hook stays inactive until the repo's "
-                  "scripts/install creates ~/.local/bin/changelogger.")
+            print("Note: the `changelogger` command is not installed yet, so the hook stays inactive. Create it with "
+                  f"`{link}` (or the repo's scripts/install).")
         return 0
     if not installed:
         print(f"already off ({target})")

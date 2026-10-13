@@ -56,7 +56,7 @@ The default `ignore` list covers merges, release commits and `[skip changelog]`.
 - for internal or ignored commits.
 
 **How it runs and where it installs:**
-- It calls the `changelogger` command, found on `PATH` or at `~/.local/bin/changelogger`. The repo's `scripts/install` creates that link. Without it, the hook does nothing.
+- It calls the `changelogger` command, found on `PATH` or at `~/.local/bin/changelogger`. Without it, the hook does nothing. `hooks on` and `hooks status` print the `ln -s` that creates it; the repo's `scripts/install` creates it too.
 - It respects `core.hooksPath` if set in the repo, and puts the block in `.husky/post-commit` for Husky v9.
 - It refuses when `core.hooksPath` is set globally, because it would then run in every repo.
 - Linked worktrees share the hook.
@@ -70,9 +70,9 @@ The hook is optional, because `status` already derives drafts for hand-made comm
 
 The plugin's PostToolUse hook runs after `git commit`, `git -C … commit` and `git revert` in Claude Code. It compares HEAD with the last commit it reported on (stored under `git rev-parse --git-path changelogger/`). It lists each new commit without a fragment, with its derived draft, as context for Claude. It stays silent in repos without `.changelog/`, and when every commit is covered.
 
-## Other agents (Codex, OpenCode, OpenClaude, …)
+## Other agents (Codex, Copilot, Cursor, Gemini, OpenCode, …)
 
-They get the skill through `scripts/install`, but there's no commit hook. Two things keep them on track:
+Codex and GitHub Copilot CLI can install the Claude Code plugin, hook included. The others get the skill only (through `npx skills` or `scripts/install`), without a commit hook. Two things keep them on track:
 - `status` surfaces anything they missed, at the latest at release time.
 - A line in the project's `AGENTS.md` (propose it; don't add it unasked): "This repo keeps a changelog in .changelog/: after each user-visible commit, add a fragment with the changelogger skill."
 

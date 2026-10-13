@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Install the changelogger skill for agents other than Claude Code, and the `changelogger` command.
+"""Install the changelogger skill from a clone, for agents other than Claude Code, and the `changelogger` command.
 
 Claude Code gets the skill (and its commit hook) from the plugin instead:
-    /plugin marketplace add <this repo>
+    /plugin marketplace add Giamme/changelogger
     /plugin install changelogger@changelogger
 
-This script symlinks skills/changelogger into each selected agent's skill directory and links
-~/.local/bin/changelogger to the CLI (the opt-in git hook calls that stable path).
-Destinations mirror the linear-spanks installer's client table.
+Without a clone, `npx skills add Giamme/changelogger` installs the skill for most agents.
+
+This script symlinks skills/changelogger into each selected agent's skill directory, so a `git pull` updates
+every agent, and links ~/.local/bin/changelogger to the CLI (the opt-in git hook calls that stable path).
 """
 
 from __future__ import annotations
@@ -111,7 +112,7 @@ def main() -> int:
                      "twice. Remove it and use the plugin.")
     if not args.uninstall:
         lines += ["", "Claude Code: install the plugin (skill + commit hook):",
-                  f"  /plugin marketplace add {REPO}", "  /plugin install changelogger@changelogger"]
+                  "  /plugin marketplace add Giamme/changelogger", "  /plugin install changelogger@changelogger"]
     print("\n".join(lines))
     return 0
 

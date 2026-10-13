@@ -477,11 +477,13 @@ class Hooks(RepoCase):
     def test_claude_hook_reports_uncovered_commits_once(self):
         self.commit("feat(export): add CSV export")
 
-        def run():
-            payload = json.dumps({"cwd": str(self.root), "tool_input": {"command": "git commit -m x"}})
+        def run(command="git commit -m x"):
+            payload = json.dumps({"cwd": str(self.root), "tool_input": {"command": command}})
             return subprocess.run([sys.executable, str(HOOK)], input=payload, env=self.env, capture_output=True,
                                   text=True).stdout
 
+        # Harnesses that ignore the hook's `if` field run it after every shell command.
+        self.assertEqual(run("ls -la"), "")
         out = json.loads(run())
         context = out["hookSpecificOutput"]["additionalContext"]
         self.assertIn("feat(export): add CSV export", context)

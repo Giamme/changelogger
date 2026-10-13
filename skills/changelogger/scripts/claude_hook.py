@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """Claude Code PostToolUse hook: report commits that have no changelog fragment yet.
 
-Reads the hook payload on stdin. In a repository with .changelog/config.json, it compares HEAD with
-the last commit it reported on and returns the uncovered commits (with their derived drafts) as
-additionalContext. It prints nothing, and exits 0, in every other case.
+Reads the hook payload on stdin. After a `git commit` or `git revert` in a repository with
+.changelog/config.json, it compares HEAD with the last commit it reported on and returns the uncovered
+commits (with their derived drafts) as additionalContext. It prints nothing, and exits 0, in every other
+case. It filters the command itself because harnesses that load Claude plugins (Codex, Copilot) ignore
+the hook's `if` field and run it after every shell command.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import shlex
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import changelogger as cl  # noqa: E402
+
+COMMITTING = re.compile(r"\bgit\b.*\b(commit|revert)\b", re.S)
 
 
 def target_dir(command: str, cwd: Path) -> Path:
@@ -38,6 +43,8 @@ def main() -> int:
     except (json.JSONDecodeError, ValueError):
         return 0
     command = (payload.get("tool_input") or {}).get("command") or ""
+    if not isinstance(command, str) or not COMMITTING.search(command):
+        return 0
     cwd = Path(payload.get("cwd") or ".")
     try:
         repo = cl.Repo(target_dir(command, cwd))
