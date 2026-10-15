@@ -122,13 +122,15 @@ class Fail(Exception):
 # --------------------------------------------------------------------------- git
 
 
-def _git_env() -> dict:
-    return {k: v for k, v in os.environ.items() if k not in ("GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE")}
+# Inside a git hook, git exports these for the repository it is committing to. Every git call below
+# targets the repository in its cwd instead, so drop them before any child process inherits them.
+for _var in ("GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE"):
+    os.environ.pop(_var, None)
 
 
 def git(cwd: Path, *args: str, check: bool = True, input: Optional[str] = None) -> str:
     proc = subprocess.run(
-        ["git", *args], cwd=cwd, env=_git_env(), input=input,
+        ["git", *args], cwd=cwd, input=input,
         capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
     if proc.returncode != 0:
@@ -139,7 +141,7 @@ def git(cwd: Path, *args: str, check: bool = True, input: Optional[str] = None) 
 
 
 def git_ok(cwd: Path, *args: str) -> bool:
-    return subprocess.run(["git", *args], cwd=cwd, env=_git_env(), capture_output=True).returncode == 0
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True).returncode == 0
 
 
 class Repo:

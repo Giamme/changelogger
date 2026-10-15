@@ -18,7 +18,7 @@ git config user.name Dev
 git config user.email dev@example.com
 
 commit() {  # commit "<message>"  (stages everything)
-  clock=$((clock + 3600))
+  (( clock += 3600 ))
   export GIT_AUTHOR_DATE="@$clock +0000" GIT_COMMITTER_DATE="@$clock +0000"
   git add -A
   git commit -q -m "$1"

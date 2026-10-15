@@ -54,7 +54,7 @@ Run it from inside the target repository (or pass `-C <path>` before the command
 7. Mention the optional git hook (`hooks on`) that drafts entries for commits made by hand. See `references/adopting.md`.
 8. If releases should happen in CI, follow `references/automation.md`. It covers a PR check that fails without a fragment, a release on every merge, and the workflow templates in `assets/github/`.
 
-If `status` in an existing setup says versioning was "never chosen", ask the questions from step 1 and set `versioning` in `.changelog/config.json` (or re-run `init --force` with the options).
+If `status` in an existing setup says versioning was "never chosen", ask the questions from step 1 and fill in `versioning` in `.changelog/config.json` (or re-run `init --force` with the options).
 
 ## Writing fragments (every commit you make here)
 
@@ -75,7 +75,7 @@ Write for the person using the software, not for the person reading the diff:
 
 | Commit | Fragment |
 |---|---|
-| `fix(export): off-by-one in row iterator` | fixed: CSV exports no longer drop the last row. |
+| `fix(csv): off-by-one in row iterator` | fixed: CSV exports no longer drop the last row. |
 | `feat(auth): add PKCE flow to oauth client` | added: You can now sign in with Google from the desktop app. |
 | `feat!: remove --legacy flag` | removed, breaking: The `--legacy` flag is gone; use `--format v1` instead. |
 | `refactor(db): split repository module` | none: `skip` it |
@@ -130,7 +130,7 @@ If a compile went wrong before the release commit, restore the touched files wit
 ## Common mistakes
 
 - Copying the commit subject as the fragment. Rewrite it for the user.
-- One fragment per commit, mechanically. Five "fix export" commits are one entry, or none.
+- One fragment per commit, mechanically. Five "fix csv" commits are one entry, or none.
 - Hand-editing the new CHANGELOG section after `compile`. Edit the fragments and recompile instead, or `changelog.json` and the What's new view drift. Older sections are fine to edit.
 - Hand-editing version numbers, or bumping only one file. Always go through `bump`.
 - Tagging or pushing because the user said "release".
