@@ -103,6 +103,15 @@ changelogger hooks on
 
 [`SKILL.md`](skills/changelogger/SKILL.md) is the full workflow. The [references](skills/changelogger/references/) cover fragments, versioning, adopting an existing changelog, What's new pages and CI.
 
+## What it runs
+
+Everything runs locally, with `python3` and `git`. There are no dependencies, no network calls and no telemetry.
+
+- **The skill** has your agent run `scripts/changelogger.py`, which reads git history and writes only inside the repo: `.changelog/`, the changelog file, a What's new JSON if you configure one, and the version files during `bump`.
+- **The plugin hook** runs `scripts/claude_hook.py` after a Bash command that contains `git commit` or `git revert`. In a repo with `.changelog/config.json`, it reads the new commits, stores the last commit it reported under `.git/changelogger/`, and tells the agent which commits have no fragment. Elsewhere it does nothing.
+- **The git hook** is opt-in (`hooks on`). It appends a marked block to `.git/hooks/post-commit`, and `hooks off` removes it.
+- **Network:** pushing, tagging and `gh release create` happen only when you ask for them, through your own `git` and `gh`. The GitHub Actions templates are copied into your repo only when you ask for releases in CI.
+
 ## Develop
 
 ```sh

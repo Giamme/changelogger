@@ -86,7 +86,7 @@
         "evals/fixtures/make_fixture.sh setup"
       ],
       "assertions": [
-        "All four user-visible changes since v0.3.0 are logged (--due filter, empty tasks.json fix, gist sync, missing task file message)",
+        "All four user-visible changes since v0.3.0 are logged (--due filter, empty tasks.json fix, tasks export, missing task file message)",
         "Internal commits are not logged as entries (no mention of the ruff bump or the due-date test)",
         "No logged entry is left as a raw draft (no 'draft: true', no conventional-commit prefixes like 'feat(' or 'fix:')",
         "Version management knows both version locations (a new config/script/doc references pyproject.toml and src/tasklet/__init__.py)",

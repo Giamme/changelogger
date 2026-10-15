@@ -78,7 +78,7 @@ target-version = "py39"
 line-length = 100
 EOF
   echo '__version__ = "0.3.0"' > src/tasklet/__init__.py
-  tasklet_cli() {  # tasklet_cli <due> <empty-ok> <sync> <missing-msg>  (1 = feature present)
+  tasklet_cli() {  # tasklet_cli <due> <empty-ok> <export> <missing-msg>  (1 = feature present)
     {
       echo 'import argparse'
       echo 'import json'
@@ -108,7 +108,7 @@ EOF
       echo '    sub = parser.add_subparsers(dest="cmd", required=True)'
       echo '    ls = sub.add_parser("list", help="show your tasks")'
       [ "$1" = 1 ] && echo '    ls.add_argument("--due", type=date.fromisoformat, help="only tasks due before this date (YYYY-MM-DD)")'
-      [ "$3" = 1 ] && echo '    sub.add_parser("sync", help="upload your tasks to a private GitHub gist")'
+      [ "$3" = 1 ] && echo '    sub.add_parser("export", help="save a copy of your tasks to another file").add_argument("path")'
       echo '    args = parser.parse_args(argv)'
       echo '    if args.cmd == "list":'
       echo '        for task in load():'
@@ -118,10 +118,10 @@ EOF
       fi
       echo '            print("- " + task["title"])'
       if [ "$3" = 1 ]; then
-        echo '    elif args.cmd == "sync":'
-        echo '        from .sync import sync'
+        echo '    elif args.cmd == "export":'
+        echo '        from .export import export'
         echo ''
-        echo '        sync(load())'
+        echo '        export(load(), args.path)'
       fi
       echo ''
       echo ''
@@ -141,26 +141,20 @@ EOF
   commit "docs: document the --due flag"
   sed -i.bak 's/line-length = 100/line-length = 100\n# ruff 0.6/' pyproject.toml && rm pyproject.toml.bak
   commit "chore: bump ruff to 0.6"
-  cat > src/tasklet/sync.py <<'EOF'
-"""Upload tasks to a private GitHub gist (`tasklet sync`)."""
+  cat > src/tasklet/export.py <<'EOF'
+"""Save a copy of the tasks to another JSON file (`tasklet export <path>`)."""
 
 import json
-import os
-import urllib.request
+from pathlib import Path
 
 
-def sync(tasks):
-    token = os.environ.get("GITHUB_TOKEN")
-    if not token:
-        raise SystemExit("Set GITHUB_TOKEN to a token with the gist scope to use tasklet sync.")
-    body = json.dumps({"public": False, "files": {"tasks.json": {"content": json.dumps(tasks, indent=2)}}})
-    request = urllib.request.Request("https://api.github.com/gists", data=body.encode(), method="POST",
-                                     headers={"Authorization": f"Bearer {token}"})
-    with urllib.request.urlopen(request) as response:
-        print("Synced to", json.load(response)["html_url"])
+def export(tasks, path):
+    target = Path(path)
+    target.write_text(json.dumps(tasks, indent=2) + "\n")
+    print(f"Exported {len(tasks)} tasks to {target}")
 EOF
   tasklet_cli 1 1 1 0
-  commit "feat(sync): sync tasks to a GitHub gist with tasklet sync"
+  commit "feat(export): save a copy of your tasks with tasklet export"
   mkdir -p tests && printf 'from datetime import date\n\n\ndef test_due():\n    assert date.fromisoformat("2026-10-01")\n' > tests/test_due.py
   commit "test: cover due-date parsing"
   tasklet_cli 1 1 1 1
